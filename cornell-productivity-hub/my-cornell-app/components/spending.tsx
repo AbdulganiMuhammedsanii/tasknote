@@ -9,6 +9,7 @@ import { useTransactions } from "@/hooks/use-transactions"
 import { useAuth } from "@/components/auth/auth-provider"
 import { usePlaidLink } from "react-plaid-link"
 import { DollarSign, RefreshCw, Link as LinkIcon } from "lucide-react"
+import { supabase } from "@/lib/supabase"
 
 export function Spending() {
   const { user } = useAuth()
@@ -20,24 +21,59 @@ export function Spending() {
   useEffect(() => {
     // Prepare link token on mount
     if (!user) return
-    fetch("/api/plaid/create-link-token", { method: "POST", credentials: "include" })
-      .then((r) => r.json())
-      .then((d) => setLinkToken(d.link_token))
-      .catch(() => { })
+    const isOauthRedirect = typeof window !== "undefined" && window.location.search.includes("oauth_state_id=")
+
+    const existing = typeof window !== "undefined" ? window.localStorage.getItem("plaid_link_token") : null
+    if (isOauthRedirect && existing) {
+      setLinkToken(existing)
+      return
+    }
+
+    const run = async () => {
+      const { data } = await supabase.auth.getSession()
+      const accessToken = data.session?.access_token
+      const res = await fetch("/api/plaid/create-link-token", {
+        method: "POST",
+        credentials: "include",
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      })
+      const json = await res.json().catch(() => ({}))
+      if (json?.link_token) {
+        setLinkToken(json.link_token)
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem("plaid_link_token", json.link_token)
+        }
+      }
+    }
+    run().catch(() => { })
   }, [user?.id])
 
   const { open, ready } = usePlaidLink({
     token: linkToken || "",
     onSuccess: async (public_token) => {
+      const { data } = await supabase.auth.getSession()
+      const accessToken = data.session?.access_token
       await fetch("/api/plaid/exchange-public-token", {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
         body: JSON.stringify({ public_token }),
       })
-      await fetch("/api/plaid/sync", { method: "POST", credentials: "include" })
+      await fetch("/api/plaid/sync", {
+        method: "POST",
+        credentials: "include",
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      })
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem("plaid_link_token")
+      }
       refetch()
     },
+    onExit: () => { },
+    receivedRedirectUri: typeof window !== "undefined" ? window.location.href : undefined,
   })
 
   const filtered = transactions.filter((t) => {
@@ -68,7 +104,20 @@ export function Spending() {
             <LinkIcon className="h-4 w-4" />
             {linkToken ? "Connect bank" : "Loading..."}
           </Button>
-          <Button variant="outline" onClick={() => fetch("/api/plaid/sync", { method: "POST", credentials: "include" }).then(() => refetch())} className="gap-2">
+          <Button
+            variant="outline"
+            onClick={async () => {
+              const { data } = await supabase.auth.getSession()
+              const accessToken = data.session?.access_token
+              await fetch("/api/plaid/sync", {
+                method: "POST",
+                credentials: "include",
+                headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+              })
+              refetch()
+            }}
+            className="gap-2"
+          >
             <RefreshCw className="h-4 w-4" />
             Sync
           </Button>

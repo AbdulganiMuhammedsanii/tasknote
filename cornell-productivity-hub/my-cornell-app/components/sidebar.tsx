@@ -6,6 +6,7 @@ import { useAuth } from "@/components/auth/auth-provider"
 import { LayoutDashboard, Target, CheckSquare, FileText, Settings, Calendar, LogOut, DollarSign } from "lucide-react"
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
+import Headshot from "@/components/AbdulganiHeadshot.png"
 
 interface SidebarProps {
   activeView: string
@@ -47,6 +48,8 @@ export function Sidebar({ activeView, setActiveView }: SidebarProps) {
     { id: "tasks", label: "Tasks", icon: CheckSquare },
     { id: "notes", label: "Notes", icon: FileText },
     { id: "spending", label: "Spending", icon: DollarSign },
+    { id: "jobs", label: "Jobs", icon: Target },
+    { id: "dating", label: "Dating", icon: Calendar },
   ]
 
   const getInitials = (email: string) => {
@@ -71,14 +74,15 @@ export function Sidebar({ activeView, setActiveView }: SidebarProps) {
     <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10">
-            {avatarUrl ? (
-              <AvatarImage src={avatarUrl} alt={displayName ?? "Cornell User"} />
-            ) : (
-              <AvatarFallback className="bg-red-600 text-white">
-                {user?.email ? getInitials(user.email) : "CU"}
-              </AvatarFallback>
-            )}
+          <Avatar className="h-12 w-12">
+            <AvatarImage
+              src={(Headshot as any).src ?? (Headshot as any)}
+              alt={displayName ?? "Cornell User"}
+              className="object-cover object-center"
+            />
+            <AvatarFallback className="bg-red-600 text-white">
+              {user?.email ? getInitials(user.email) : "CU"}
+            </AvatarFallback>
           </Avatar>
           <div>
             <h2 className="font-semibold text-gray-900">{fullName || "Cornell User"}</h2>

@@ -46,8 +46,8 @@ export function Dashboard() {
     <div className="p-10 space-y-8 overflow-y-auto h-full">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900">Good morning, John!</h1>
-          <p className="text-gray-600 mt-1">Here's what's happening today</p>
+          <h1 className="text-4xl font-bold text-gray-900">Good morning, Abdulgani!</h1>
+          <p className="text-gray-600 mt-1">Let's make progress</p>
         </div>
         <Dialog open={isQuickOpen} onOpenChange={setIsQuickOpen}>
           <DialogTrigger asChild>

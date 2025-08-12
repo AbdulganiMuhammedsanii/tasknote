@@ -7,9 +7,9 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get("code")
 
   if (code) {
-    const cookieStore = cookies()
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
-    await supabase.auth.exchangeCodeForSession(code)
+    const supabase = createRouteHandlerClient({ cookies })
+    // Using the request object lets the helper set auth cookies on the response
+    await supabase.auth.exchangeCodeForSession(request)
 
     // After establishing a session, upsert the user's profile with metadata
     const {

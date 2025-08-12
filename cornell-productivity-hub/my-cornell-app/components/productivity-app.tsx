@@ -7,6 +7,8 @@ import { Goals } from "@/components/goals"
 import { Tasks } from "@/components/tasks"
 import { Notes } from "@/components/notes"
 import { Spending } from "@/components/spending"
+import { Jobs } from "@/components/jobs"
+import { Dating } from "@/components/dating"
 
 export function ProductivityApp() {
   const [activeView, setActiveView] = useState("dashboard")
@@ -23,6 +25,10 @@ export function ProductivityApp() {
         return <Notes />
       case "spending":
         return <Spending />
+      case "jobs":
+        return <Jobs />
+      case "dating":
+        return <Dating />
       default:
         return <Dashboard />
     }

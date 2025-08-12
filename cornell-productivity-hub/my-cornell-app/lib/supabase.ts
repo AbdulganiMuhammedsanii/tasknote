@@ -139,6 +139,61 @@ export type Database = {
           updated_at?: string
         }
       }
+      jobs: {
+        Row: {
+          id: string
+          user_id: string
+          company: string
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          company: string
+          status: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          company?: string
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      dating_entries: {
+        Row: {
+          id: string
+          user_id: string
+          person_name: string
+          note: string | null
+          event_date: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          person_name: string
+          note?: string | null
+          event_date?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          person_name?: string
+          note?: string | null
+          event_date?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
   }
 }

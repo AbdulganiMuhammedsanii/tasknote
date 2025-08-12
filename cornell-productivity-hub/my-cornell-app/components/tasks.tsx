@@ -56,23 +56,39 @@ export function Tasks() {
   }
 
   const getFilteredTasks = (filterType: string) => {
-    const today = new Date().toISOString().split("T")[0]
+    // Local date in YYYY-MM-DD to avoid UTC off-by-one issues
+    const today = new Date().toLocaleDateString("en-CA")
+
+    const sortByDue = (arr: typeof tasks) => {
+      const today = new Date().toLocaleDateString("en-CA")
+      return [...arr].sort((a, b) => {
+        const aStr = a.due_date ? String(a.due_date).slice(0, 10) : null
+        const bStr = b.due_date ? String(b.due_date).slice(0, 10) : null
+        const aRank = aStr === null ? 2 : aStr >= today ? 0 : 1
+        const bRank = bStr === null ? 2 : bStr >= today ? 0 : 1
+        if (aRank !== bRank) return aRank - bRank
+        if (aRank === 0) return (new Date(aStr!).getTime()) - (new Date(bStr!).getTime())
+        if (aRank === 1) return (new Date(bStr!).getTime()) - (new Date(aStr!).getTime())
+        return 0
+      })
+    }
 
     switch (filterType) {
       case "today":
-        return tasks.filter((task) => (task.due_date || "").slice(0, 10) === today)
+        return sortByDue(tasks.filter((task) => (task.due_date || "").slice(0, 10) === today))
       case "upcoming":
-        return tasks.filter((task) => (task.due_date || "") > today && !task.completed)
+        return sortByDue(tasks.filter((task) => (task.due_date || "") > today && !task.completed))
       case "completed":
-        return tasks.filter((task) => task.completed)
+        return sortByDue(tasks.filter((task) => task.completed))
       default:
-        return tasks
+        return sortByDue(tasks)
     }
   }
 
-  const TaskList = ({ tasks }: { tasks: typeof tasks }) => (
+  type TaskType = ReturnType<typeof useTasks>["tasks"][number]
+  const TaskList = ({ tasks }: { tasks: TaskType[] }) => (
     <div className="space-y-3">
-      {tasks.map((task) => (
+      {tasks.map((task: TaskType) => (
         <Card key={String(task.id)} className="hover:shadow-md transition-shadow">
           <CardContent className="p-4">
             <div className="flex items-center gap-4">

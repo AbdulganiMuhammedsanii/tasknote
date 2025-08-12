@@ -30,10 +30,30 @@ export function useTasks() {
         .from("tasks")
         .select("*")
         .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
+        .order("due_date", { ascending: true })
 
       if (error) throw error
-      setTasks(data || [])
+      // Use local date to avoid UTC-induced off-by-one
+      const todayStr = new Date().toLocaleDateString("en-CA")
+      const sorted = (data || []).sort((a: any, b: any) => {
+        const aStr = a.due_date ? String(a.due_date).slice(0, 10) : null
+        const bStr = b.due_date ? String(b.due_date).slice(0, 10) : null
+
+        const aRank = aStr === null ? 2 : aStr >= todayStr ? 0 : 1
+        const bRank = bStr === null ? 2 : bStr >= todayStr ? 0 : 1
+        if (aRank !== bRank) return aRank - bRank
+
+        if (aRank === 0) {
+          // future/today: ascending (soonest first)
+          return (new Date(aStr!).getTime()) - (new Date(bStr!).getTime())
+        }
+        if (aRank === 1) {
+          // past: descending (most recent first)
+          return (new Date(bStr!).getTime()) - (new Date(aStr!).getTime())
+        }
+        return 0
+      })
+      setTasks(sorted)
     } catch (error) {
       console.error("Error fetching tasks:", error)
     } finally {
