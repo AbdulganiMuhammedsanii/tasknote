@@ -30,9 +30,10 @@ export function Dashboard() {
     setQuickContent("")
     setIsQuickOpen(false)
   }
-  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], [])
+  // Use local date (YYYY-MM-DD) to avoid UTC off-by-one
+  const todayStr = useMemo(() => new Date().toLocaleDateString("en-CA"), [])
   const todaysTasks = useMemo(
-    () => tasks.filter((t) => (t.due_date || "").slice(0, 10) === todayStr),
+    () => tasks.filter((t) => String(t.due_date || "").slice(0, 10) === todayStr),
     [tasks, todayStr]
   )
   const completedTasks = useMemo(() => todaysTasks.filter((t) => t.completed).length, [todaysTasks])

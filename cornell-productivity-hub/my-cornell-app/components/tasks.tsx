@@ -56,11 +56,11 @@ export function Tasks() {
   }
 
   const getFilteredTasks = (filterType: string) => {
-    // Local date in YYYY-MM-DD to avoid UTC off-by-one issues
-    const today = new Date().toLocaleDateString("en-CA")
+    // Get today's date in NY timezone in YYYY-MM-DD format
+    const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" })
 
     const sortByDue = (arr: typeof tasks) => {
-      const today = new Date().toLocaleDateString("en-CA")
+      const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" })
       return [...arr].sort((a, b) => {
         const aStr = a.due_date ? String(a.due_date).slice(0, 10) : null
         const bStr = b.due_date ? String(b.due_date).slice(0, 10) : null
@@ -86,6 +86,12 @@ export function Tasks() {
   }
 
   type TaskType = ReturnType<typeof useTasks>["tasks"][number]
+  const formatDueDate = (isoDate?: string | null) => {
+    if (!isoDate) return ""
+    const d = new Date(isoDate)
+    d.setDate(d.getDate() + 1)
+    return d.toLocaleDateString()
+  }
   const TaskList = ({ tasks }: { tasks: TaskType[] }) => (
     <div className="space-y-3">
       {tasks.map((task: TaskType) => (
@@ -107,7 +113,7 @@ export function Tasks() {
                   {task.due_date && (
                     <div className="flex items-center gap-1 text-xs text-gray-500">
                       <Calendar className="h-3 w-3" />
-                      {new Date(task.due_date).toLocaleDateString()}
+                      {formatDueDate(task.due_date)}
                     </div>
                   )}
                 </div>
@@ -124,6 +130,17 @@ export function Tasks() {
       )}
     </div>
   )
+
+  // Helper: sort by due date (most recent/top), nulls last
+  const sortByDueDesc = (arr: TaskType[]) =>
+    [...arr].sort((a, b) => {
+      const aStr = a.due_date ? String(a.due_date).slice(0, 10) : null
+      const bStr = b.due_date ? String(b.due_date).slice(0, 10) : null
+      if (!aStr && !bStr) return 0
+      if (!aStr) return 1
+      if (!bStr) return -1
+      return new Date(bStr).getTime() - new Date(aStr).getTime()
+    })
 
   return (
     <div className="p-8 space-y-8 overflow-y-auto h-full">
@@ -218,7 +235,16 @@ export function Tasks() {
         </TabsList>
 
         <TabsContent value="all">
-          <TaskList tasks={getFilteredTasks("all")} />
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-sm font-semibold text-gray-700 mb-2">Uncompleted</h2>
+              <TaskList tasks={sortByDueDesc(getFilteredTasks("all").filter((t) => !t.completed))} />
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-gray-700 mb-2">Completed</h2>
+              <TaskList tasks={sortByDueDesc(getFilteredTasks("all").filter((t) => t.completed))} />
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="today">

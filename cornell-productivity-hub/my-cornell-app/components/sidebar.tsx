@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth } from "@/components/auth/auth-provider"
-import { LayoutDashboard, Target, CheckSquare, FileText, Settings, Calendar, LogOut, DollarSign } from "lucide-react"
+import { LayoutDashboard, Target, CheckSquare, FileText, Settings, Calendar, LogOut } from "lucide-react"
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import Headshot from "@/components/AbdulganiHeadshot.png"
@@ -47,9 +47,9 @@ export function Sidebar({ activeView, setActiveView }: SidebarProps) {
     { id: "goals", label: "Goals", icon: Target },
     { id: "tasks", label: "Tasks", icon: CheckSquare },
     { id: "notes", label: "Notes", icon: FileText },
-    { id: "spending", label: "Spending", icon: DollarSign },
     { id: "jobs", label: "Jobs", icon: Target },
     { id: "dating", label: "Dating", icon: Calendar },
+    { id: "order", label: "Order", icon: FileText },
   ]
 
   const getInitials = (email: string) => {
